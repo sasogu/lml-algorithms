@@ -2,8 +2,20 @@ import * as tfconv from '@tensorflow/tfjs-converter';
 import * as tf from '@tensorflow/tfjs-core';
 
 let mobilenet;
+let urlBaseModels;
 
-export function mobilenetEncoder(items, urlBaseModels) {
+/**
+ * 
+ * @param {string} url la URL dónde se encuentran los modelos que necesita mobilenet para funcionar. 
+ * @returns La función que representa el encoder con la signatura que exige los codificadores de esta librería,
+ *          es decir, un solo argumento que es un array de items a codificar 
+ */
+export function getMobilenetEncoder(url){
+  urlBaseModels =  url;
+  return encoder;
+}
+
+function encoder(items) {
   if (mobilenet == null) {
     mobilenet = new MobilenetService(urlBaseModels).get();
   }
@@ -33,7 +45,7 @@ export function mobilenetEncoder(items, urlBaseModels) {
   });
 }
 
-export class MobilenetService {
+class MobilenetService {
 
   IMAGE_SIZE = 224;
 
