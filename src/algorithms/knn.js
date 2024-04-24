@@ -1,7 +1,8 @@
 import * as tf from '@tensorflow/tfjs-core';
-import { 
-    getFormattedModelResult, 
-    getSuffledAndSplittedTensorsAndValidationData } from './util';
+import {
+    getFormattedModelResult,
+    getSuffledAndSplittedTensorsAndValidationData
+} from './util';
 
 function concatWithNulls(ndarray1, ndarray2) {
     if (ndarray1 == null && ndarray2 == null) {
@@ -34,18 +35,21 @@ function topK(values, k) {
 
 
 class KNNClassifier {
-    // The full concatenated dataset that is constructed lazily before making a
-    // prediction.
-    trainDatasetMatrix;
 
-    // Individual class datasets used when adding examples. These get concatenated
-    // into the full trainDatasetMatrix when a prediction is made.
-    classDatasetMatrices = {};
-    classExampleCount = {};
+    constructor() {
+        // The full concatenated dataset that is constructed lazily before making a
+        // prediction.
+        this.trainDatasetMatrix;
 
-    exampleShape;
-    labelToClassId = {};
-    nextClassId = 0;
+        // Individual class datasets used when adding examples. These get concatenated
+        // into the full trainDatasetMatrix when a prediction is made.
+        this.classDatasetMatrices = {};
+        this.classExampleCount = {};
+
+        this.exampleShape;
+        this.labelToClassId = {};
+        this.nextClassId = 0;
+    }
 
     /**
      * Adds the provided example to the specified class.
@@ -307,6 +311,11 @@ export class KNN {
         };
     }
 
+    getName(){
+        return 'knn';
+    }
+
+
     setHyperParameters(params) {
         this.hyperparams = params;
     }
@@ -314,8 +323,8 @@ export class KNN {
     train(features, percentageForValidation = 0) {
 
         this.labels = Array.from(features.keys());
-        let tensors = getSuffledAndSplittedTensorsAndValidationData(features, percentageForValidation);       
-        
+        let tensors = getSuffledAndSplittedTensorsAndValidationData(features, percentageForValidation);
+
         ///////////// KNN ////////////
         const classifier = new KNNClassifier();
         let inputs = tf.unstack(tensors.inputTensor);
@@ -333,7 +342,7 @@ export class KNN {
         this.model = classifier;
         let info = "NO INFO";
 
-        let result = getFormattedModelResult(this.model, info, tensors.validationData);         
+        let result = getFormattedModelResult(this.model, info, tensors.validationData);
 
         return Promise.resolve(result);
     }

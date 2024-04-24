@@ -10,8 +10,8 @@ let urlBaseModels;
  * @returns La función que representa el encoder con la signatura que exige los codificadores de esta librería,
  *          es decir, un solo argumento que es un array de items a codificar 
  */
-export function getMobilenetEncoder(url){
-  urlBaseModels =  url;
+export function getMobilenetEncoder(url) {
+  urlBaseModels = url;
   return encoder;
 }
 
@@ -47,36 +47,35 @@ function encoder(items) {
 
 class MobilenetService {
 
-  IMAGE_SIZE = 224;
-
-  EMBEDDING_NODES = {
-    '1.00': 'module_apply_default/MobilenetV1/Logits/global_pool',
-    '2.00': 'module_apply_default/MobilenetV2/Logits/AvgPool'
-  };
-
-  MODEL_INFO = {};
-
-  /**
-   * tfconv.GraphModel
-   */
-  mobilenet;
-
-  // Values read from images are in the range [0.0, 255.0], but they must
-  // be normalized to [min, max] before passing to the mobilenet classifier.
-  // Different implementations of mobilenet have different values of [min, max].
-  // We store the appropriate normalization parameters using these two scalars
-  // such that:
-  // out = (in / 255.0) * (inputMax - inputMin) + inputMin;
-  normalizationConstant;
-
-  inputMin = -1;
-  inputMax = 1;
-
-  version = '1.00';
-  alpha = '1.00';
-
   constructor(urlBase) {
 
+    this.IMAGE_SIZE = 224;
+
+    this.EMBEDDING_NODES = {
+      '1.00': 'module_apply_default/MobilenetV1/Logits/global_pool',
+      '2.00': 'module_apply_default/MobilenetV2/Logits/AvgPool'
+    };
+
+    this.MODEL_INFO = {};
+
+    /**
+     * tfconv.GraphModel
+     */
+    this.mobilenet;
+
+    // Values read from images are in the range [0.0, 255.0], but they must
+    // be normalized to [min, max] before passing to the mobilenet classifier.
+    // Different implementations of mobilenet have different values of [min, max].
+    // We store the appropriate normalization parameters using these two scalars
+    // such that:
+    // out = (in / 255.0) * (inputMax - inputMin) + inputMin;
+    this.normalizationConstant;
+
+    this.inputMin = -1;
+    this.inputMax = 1;
+
+    this.version = '1.00';
+    this.alpha = '1.00';
 
     this.normalizationConstant = (this.inputMax - this.inputMin) / 255;
 

@@ -1,9 +1,9 @@
 import * as tf from '@tensorflow/tfjs';
-import { 
+import {
     getFormattedModelResult,
     getFeatureAndNumOfClasses,
     getSuffledAndSplittedTensorsAndValidationData
- } from './util';
+} from './util';
 
 /**
  * @typedef {Object} Dimensiones
@@ -32,10 +32,13 @@ export class LMLSequential {
         };
     }
 
+    getName() {
+        return 'sequential';
+    }
+
     setHyperParameters(params) {
         this.hyperparams = params;
     }
-
 
     /**
      * 
@@ -96,10 +99,10 @@ export class LMLSequential {
 
         this.labels = Array.from(features.keys());
         let dims = getFeatureAndNumOfClasses(features);
-        let tensors = getSuffledAndSplittedTensorsAndValidationData(features, percentageForValidation);     
+        let tensors = getSuffledAndSplittedTensorsAndValidationData(features, percentageForValidation);
 
         ////////////// SEQUENTIAL /////////////
-        if (!this.model || (this.hyperparams.learningRate != 0.001)) {
+        if (!this.model) {
             this.model = this.buildModel(dims.featureDim, dims.numOfClasses);
         }
 
@@ -117,12 +120,19 @@ export class LMLSequential {
             validationData: tensors.validationData
         }).then(info => {
             this.model.save('indexeddb://lml-sequential-model');
-            
+
             ////////////////////////////////////////
-            
-            let result = getFormattedModelResult(this.model, info, tensors.validationData);         
-            
+
+            let result = getFormattedModelResult(this.model, info, tensors.validationData);
+
             return result;
+        });
+    }
+
+    load(url) {
+        return tf.loadLayersModel(url).then(model => {
+            this.model = model;
+            return 'MODEL LOADED';
         });
     }
 
