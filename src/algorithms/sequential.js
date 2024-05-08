@@ -102,9 +102,7 @@ export class LMLSequential {
         let tensors = getSuffledAndSplittedTensorsAndValidationData(features, percentageForValidation);
 
         ////////////// SEQUENTIAL /////////////
-        if (!this.model) {
-            this.model = this.buildModel(dims.featureDim, dims.numOfClasses);
-        }
+        this.model = this.buildModel(dims.featureDim, dims.numOfClasses);
 
         function onBatchEnd(batch, logs) {
             console.log('Accuracy', logs.acc);
