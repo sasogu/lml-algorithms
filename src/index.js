@@ -6,18 +6,18 @@ import { LMLSequential } from "./algorithms/sequential";
 import { KNN } from "./algorithms/knn";
 import { confusionMatrix } from "./algorithms/util";
 
-function saveDatasetInLocalStorage(clave, dataset) {
+function serializeMap(m) {
         const serializableMap = {};
-        dataset.forEach((value, key) => {
+        m.forEach((value, key) => {
                 // Convertir el Set a un array antes de serializar
                 serializableMap[key] = Array.from(value);
         });
-        const serializado = JSON.stringify(serializableMap);
-        localStorage.setItem(clave, serializado);
+         
+        return JSON.stringify(serializableMap);
 }
 
-function getDatasetFromLocalStorage(clave) {
-        const serializado = localStorage.getItem(clave);
+function deserializeToMap(s) {
+        const serializado = s;
         if (serializado) {
                 const serializableMap = JSON.parse(serializado);
                 const mapConSet = new Map();
@@ -37,6 +37,6 @@ export {
         LMLSequential,
         KNN,
         confusionMatrix,
-        saveDatasetInLocalStorage,
-        getDatasetFromLocalStorage
+        serializeMap,
+        deserializeToMap
 }

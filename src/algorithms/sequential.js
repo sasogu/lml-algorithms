@@ -32,6 +32,14 @@ export class LMLSequential {
         };
     }
 
+    serialize(){
+        return {
+            modelAlgorithm: 'sequential',
+            labels: this.labels,
+            hyperParameters: this.hyperparams
+        }
+    }
+
     getName() {
         return 'sequential';
     }

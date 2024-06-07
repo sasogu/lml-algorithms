@@ -1,6 +1,6 @@
 {
   "name": "lml-algorithms",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Algoritmos de ML y para la extracción de características de LearningML",
   "main": "src/index.js",
   "scripts": {
