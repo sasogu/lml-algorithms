@@ -1,4 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import {
     getFormattedModelResult,
     getFeatureAndNumOfClasses,
@@ -32,7 +34,7 @@ export class LMLSequential {
         };
     }
 
-    serialize(){
+    serialize() {
         return {
             modelAlgorithm: 'sequential',
             labels: this.labels,
@@ -46,6 +48,20 @@ export class LMLSequential {
 
     setHyperParameters(params) {
         this.hyperparams = params;
+    }
+
+    save(name='model') {
+        return this.model.save(tf.io.withSaveHandler(async (artifacts) => {
+            const zip = new JSZip();
+            zip.file(name + ".json", JSON.stringify(artifacts.modelTopology));
+            const weights = new Uint8Array(artifacts.weightData);
+            zip.file(name + ".weights.bin", weights);
+
+            return zip.generateAsync({ type: "blob" });            
+        })).then(content => {
+            saveAs(content, name + ".zip");
+            return 'model saved to disk';
+        });
     }
 
     /**
@@ -124,7 +140,7 @@ export class LMLSequential {
             shuffle: true,
             //validationSplit: this.params.neural_network.validationSplit/100,
             validationData: tensors.validationData
-        }).then(info => {                    
+        }).then(info => {
             let result = getFormattedModelResult(this.model, info, tensors.validationData);
 
             return result;
@@ -138,7 +154,7 @@ export class LMLSequential {
         });
     }
 
-    classify(inputTensor, labels=null) {
+    classify(inputTensor, labels = null) {
         const prediction = this.model.predict(inputTensor);
         inputTensor.dispose();
         const predictions = prediction.dataSync();
@@ -148,7 +164,7 @@ export class LMLSequential {
         // Si se ejecutó train antes de classify, this.labels está rellena, pero 
         // si se ejecutó classify sin llamar antes a train (esto pasa cuando se carga 
         // un modelo desde el localstorage) hay que pasar la lista de labels        
-        let _labels = (labels == null)? this.labels : labels
+        let _labels = (labels == null) ? this.labels : labels
         const arr_predictions = Array.from(predictions);
         let results = [];
         for (let i = 0; i < arr_predictions.length; i++) {
