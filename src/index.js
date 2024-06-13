@@ -4,6 +4,7 @@ import { useEncoder } from "./feature-extraction/useEncoder";
 
 import { LMLSequential } from "./algorithms/sequential";
 import { KNN } from "./algorithms/knn";
+import { LMLModelFactory } from "./algorithms/modelFactory";
 import { confusionMatrix } from "./algorithms/util";
 
 function serializeMap(m) {
@@ -36,6 +37,7 @@ export {
         useEncoder,
         LMLSequential,
         KNN,
+        LMLModelFactory,
         confusionMatrix,
         serializeMap,
         deserializeToMap

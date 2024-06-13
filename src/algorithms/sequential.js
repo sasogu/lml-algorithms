@@ -50,42 +50,37 @@ export class LMLSequential {
         this.hyperparams = params;
     }
 
-    save(name = 'model') {
-
-        const jsonUpload = document.getElementById('json-upload');
-        const weightsUpload = document.getElementById('weights-upload');
-
-        return tf.loadLayersModel(
-            tf.io.browserFiles([jsonUpload.files[0], weightsUpload.files[0]])).then(model => {
-                console.log(model);
-            });
-       
-       
+    saveToDisk(name = 'model', lmlModelMetadata) {
         console.log("SAVING MODEL ZIP");
-        // return this.model.save(tf.io.withSaveHandler(async (artifacts) => {
-        //     const zip = new JSZip();
-        //     let jsonFile = {
-        //         modelTopology: artifacts.modelTopology,
-        //         format: artifacts.format,
-        //         generatedBy: artifacts.generatedBy,
-        //         convertedBy: artifacts.convertedBy,
-        //         weightsManifest: [{
-        //             paths: [
-        //                 './iris.weights.bin'
-        //             ],
-        //             weights: artifacts.weightSpecs
-        //         }
-        //         ]
-        //     }
-        //     zip.file(name + ".json", JSON.stringify(jsonFile));
-        //     const weights = new Uint8Array(artifacts.weightData);
-        //     zip.file(name + ".weights.bin", weights);
+        return this.model.save(tf.io.withSaveHandler(async (artifacts) => {
+            const zip = new JSZip();
+            let jsonFile = {
+                modelTopology: artifacts.modelTopology,
+                format: artifacts.format,
+                generatedBy: artifacts.generatedBy,
+                convertedBy: artifacts.convertedBy,
+                weightsManifest: [{
+                    paths: [
+                        './iris.weights.bin'
+                    ],
+                    weights: artifacts.weightSpecs
+                }
+                ]
+            }
+            zip.file(name + ".json", JSON.stringify(jsonFile));
+            const weights = new Uint8Array(artifacts.weightData);
+            zip.file(name + ".weights.bin", weights);
+            zip.file(name + ".metadata", JSON.stringify(lmlModelMetadata));
 
-        //     return zip.generateAsync({ type: "blob" });
-        // })).then(content => {
-        //     saveAs(content, name + ".zip");
-        //     return 'model saved to disk';
-        // });
+            return zip.generateAsync({ type: "blob" });
+        })).then(content => {
+            saveAs(content, name + ".zip");
+            return 'model saved to disk';
+        });
+    }
+
+    saveToLocalstorage(){
+        this.model.model.save('localstorage://lml');
     }
 
     /**
@@ -171,19 +166,22 @@ export class LMLSequential {
         });
     }
 
-    load(url) {
-        return tf.loadLayersModel(url).then(model => {
-            this.model = model;
-            return 'MODEL LOADED';
-        });
+
+    load(mode, modelZipContent = null) {
+        if (mode == 'autonomous') {
+            return this.loadForAutomousMode(modelZipContent);
+        } else {
+            return this.loadForLMLMode();
+        }
     }
 
-    loadFromZip(modelZipContent) {
+    loadForAutomousMode(modelZipContent) {
 
         let promises = [];
 
         let jsonFile = modelZipContent.files['iris.json'];
         let weightsFile = modelZipContent.files['iris.weights.bin'];
+        let metadata = modelZipContent.files['iris.metadata'];
 
         promises.push(jsonFile.async("blob").then(blob => {
             const file = new File([blob], jsonFile.name, {
@@ -198,16 +196,36 @@ export class LMLSequential {
             return file;
         }));
 
+        promises.push(metadata.async("string").then(content => {
+            return JSON.parse(content);
+        }));
+
         return Promise.all(promises).then(r => {
             console.log(r);
             return tf.loadLayersModel(tf.io.browserFiles([r[0], r[1]]))
                 .then(model => {
                     this.model = model;
-                    return 'MODEL LOADED from ZIP';
+                    return {
+                        model: this,
+                        lmlModelMetadata: r[2]
+                    };
                 });
         })
 
+    }
 
+    loadForLMLMode() {
+        if (!localStorage.getItem('lmlModelMetadata')) {
+            return;
+        }
+
+        return tf.loadLayersModel('localstorage://lml').then(model => {
+            this.model = model;
+            return {
+                model: this,
+                lmlModelMetadata: JSON.parse(localStorage.getItem('lmlModelMetadata'))
+            };
+        });
     }
 
     classify(inputTensor, labels = null) {
