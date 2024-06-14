@@ -61,7 +61,7 @@ export class LMLSequential {
                 convertedBy: artifacts.convertedBy,
                 weightsManifest: [{
                     paths: [
-                        './iris.weights.bin'
+                        './' + name + '.weights.bin'
                     ],
                     weights: artifacts.weightSpecs
                 }
@@ -179,9 +179,11 @@ export class LMLSequential {
 
         let promises = [];
 
-        let jsonFile = modelZipContent.files['iris.json'];
-        let weightsFile = modelZipContent.files['iris.weights.bin'];
-        let metadata = modelZipContent.files['iris.metadata'];
+        let name = Object.keys(modelZipContent.files)[0].split(".")[0];
+
+        let jsonFile = modelZipContent.files[name + '.json'];
+        let weightsFile = modelZipContent.files[name + '.weights.bin'];
+        let metadata = modelZipContent.files[name + '.metadata'];
 
         promises.push(jsonFile.async("blob").then(blob => {
             const file = new File([blob], jsonFile.name, {

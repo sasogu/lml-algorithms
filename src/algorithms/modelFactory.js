@@ -57,7 +57,8 @@ export class LMLModelFactory {
         let metadata;
 
         if (mode == 'autonomous' && modelZipContent != null) {
-            metadata = modelZipContent.files['iris.metadata'];
+            let name = Object.keys(modelZipContent.files)[0].split(".")[0];
+            metadata = modelZipContent.files[name + '.metadata'];
             return metadata.async("string").then(content => {
                 let lmlModelMetadata = JSON.parse(content);
                 let model = LMLModelFactory.createModel(lmlModelMetadata.model.modelAlgorithm);
