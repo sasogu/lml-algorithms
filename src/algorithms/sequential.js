@@ -74,7 +74,7 @@ export class LMLSequential {
 
             return zip.generateAsync({ type: "blob" });
         })).then(content => {
-            saveAs(content, name + ".zip");
+            saveAs(content, "lml_" + name + ".mdl");
             return 'model saved to disk';
         });
     }
@@ -209,7 +209,8 @@ export class LMLSequential {
                     this.model = model;
                     return {
                         model: this,
-                        lmlModelMetadata: r[2]
+                        lmlModelMetadata: r[2],
+                        loadedFrom: 'disk'
                     };
                 });
         })
@@ -225,7 +226,8 @@ export class LMLSequential {
             this.model = model;
             return {
                 model: this,
-                lmlModelMetadata: JSON.parse(localStorage.getItem('lmlModelMetadata'))
+                lmlModelMetadata: JSON.parse(localStorage.getItem('lmlModelMetadata')),
+                loadedFrom: 'localstorage'
             };
         });
     }

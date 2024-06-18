@@ -82,7 +82,8 @@ export class LMLModelFactory {
                 status: {
                     modelEditor: 'text',
                     modelName: 'undefined'
-                }
+                },
+                loadedFrom: false
             }
 
             return Promise.resolve({
