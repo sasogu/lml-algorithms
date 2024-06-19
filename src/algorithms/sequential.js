@@ -38,7 +38,7 @@ export class LMLSequential {
         return {
             modelAlgorithm: 'sequential',
             labels: this.labels,
-            hyperParameters: this.hyperparams
+            hyperparameters: this.hyperparams
         }
     }
 
