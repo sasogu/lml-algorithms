@@ -25,6 +25,7 @@ import {
 export class LMLSequential {
 
     constructor() {
+        this.name = "model";
         this.model = null;
         this.labels = [];
         this.hyperparams = {
@@ -35,25 +36,35 @@ export class LMLSequential {
     }
 
     serialize() {
-        return {
+
+        let metadata = {
             modelAlgorithm: 'sequential',
             labels: this.labels,
             hyperparameters: this.hyperparams
-        }
-    }
+        };
 
-    getName() {
-        return 'sequential';
+        if (this.model != null) {
+            return this.saveToMemory().then(artifacts => {
+                return {
+                    metadata: metadata,
+                    jsonFile: artifacts.jsonFile,
+                    weights: artifacts.weights
+                }
+            })
+        } else {
+            return Promise.resolve({
+                metadata: metadata,
+                model: null
+            })
+        }
     }
 
     setHyperParameters(params) {
         this.hyperparams = params;
     }
 
-    saveToDisk(name = 'model', lmlModelMetadata) {
-        console.log("SAVING MODEL ZIP");
-        return this.model.save(tf.io.withSaveHandler(async (artifacts) => {
-            const zip = new JSZip();
+    saveToMemory() {
+        return this.model.save(tf.io.withSaveHandler(artifacts => {
             let jsonFile = {
                 modelTopology: artifacts.modelTopology,
                 format: artifacts.format,
@@ -61,25 +72,38 @@ export class LMLSequential {
                 convertedBy: artifacts.convertedBy,
                 weightsManifest: [{
                     paths: [
-                        './' + name + '.weights.bin'
+                        './' + this.name + '.weights.bin'
                     ],
                     weights: artifacts.weightSpecs
                 }
                 ]
             }
-            zip.file(name + ".json", JSON.stringify(jsonFile));
-            const weights = new Uint8Array(artifacts.weightData);
-            zip.file(name + ".weights.bin", weights);
-            zip.file(name + ".metadata", JSON.stringify(lmlModelMetadata));
+
+            return {
+                jsonFile: jsonFile,
+                weights: artifacts.weightData,
+            }
+        }));
+    }
+
+    saveToDisk() {
+        console.log("SAVING MODEL ZIP");
+        return this.saveToMemory().then(artifacts => {
+            const zip = new JSZip();
+
+            zip.file(this.name + ".json", JSON.stringify(artifacts.jsonFile));
+            const weights = new Uint8Array(artifacts.weights);
+            zip.file(this.name + ".weights.bin", weights);
+            zip.file(this.name + ".metadata", JSON.stringify(artifacts.lmlModelMetadata));
 
             return zip.generateAsync({ type: "blob" });
-        })).then(content => {
-            saveAs(content, "lml_" + name + ".mdl");
+        }).then(content => {
+            saveAs(content, "lml_" + this.name + ".mdl");
             return 'model saved to disk';
         });
     }
 
-    saveToLocalstorage(){
+    saveToLocalstorage() {
         this.model.model.save('localstorage://lml');
     }
 
