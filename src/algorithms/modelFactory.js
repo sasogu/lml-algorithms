@@ -61,7 +61,7 @@ export class LMLModelFactory {
             metadata = modelZipContent.files[name + '.metadata'];
             return metadata.async("string").then(content => {
                 let lmlModelMetadata = JSON.parse(content);
-                let model = LMLModelFactory.createModel(lmlModelMetadata.model.modelAlgorithm);
+                let model = LMLModelFactory.createModel(lmlModelMetadata.modelAlgorithm);
                 return model.loadForAutomousMode(modelZipContent);
             })
         } else if (mode != 'autonomous' && localStorage.getItem('lmlModelMetadata') != null) {
@@ -69,27 +69,33 @@ export class LMLModelFactory {
             let model = LMLModelFactory.createModel(metadata.model.modelAlgorithm);
             return model.loadForLMLMode();
         } else {
-            metadata = {
-                model: {
-                    modelAlgorithm: 'sequential',
-                    hyperparameters: {
-                        learningRate: 0.001,
-                        batchSize: 10,
-                        epochs: 20
+            let model = LMLModelFactory.createModel('sequential')
+            let result = {
+                lmlModel: model,
+                lmlModelMetadata: {
+                    model: {
+                        jsonFile: null,
+                        weights: null,
+                        metadata: {
+                            modelAlgorithm: 'sequential',
+                            hyperparameters: {
+                                learningRate: 0.001,
+                                batchSize: 10,
+                                epochs: 20
+                            },
+                            labels: []
+                        }
+
                     },
-                    labels: []
+                    data: {
+                        type: 'text',
+                        name: 'undefined'
+                    }
                 },
-                status: {
-                    modelEditor: 'text',
-                    modelName: 'undefined'
-                },
-                loadedFrom: false
+                loadedFrom: 'blank'
             }
 
-            return Promise.resolve({
-                model: LMLModelFactory.createModel(metadata.model.modelAlgorithm),
-                lmlModelMetadata: metadata
-            })
+            return Promise.resolve(result);
         }
 
     }

@@ -229,6 +229,7 @@ export class LMLSequential {
         let jsonFile = modelZipContent.files[name + '.json'];
         let weightsFile = modelZipContent.files[name + '.weights.bin'];
         let metadata = modelZipContent.files[name + '.metadata'];
+        let datatype = modelZipContent.files[name + '.datatype'];
 
         promises.push(jsonFile.async("blob").then(blob => {
             const file = new File([blob], jsonFile.name, {
@@ -247,14 +248,27 @@ export class LMLSequential {
             return JSON.parse(content);
         }));
 
+        promises.push(datatype.async("string").then(content => {
+            return JSON.parse(content);
+        }));
+
         return Promise.all(promises).then(r => {
             console.log(r);
-            return tf.loadLayersModel(tf.io.browserFiles([r[0], r[1]]))
+            let jsonFile = r[0];
+            let weights = r[1];
+            let metadata = r[2];
+            let data = r[3];
+            return tf.loadLayersModel(tf.io.browserFiles([jsonFile, weights]))
                 .then(model => {
                     this.model = model;
                     return {
-                        model: this,
-                        lmlModelMetadata: r[2],
+                        lmlModel: this,
+                        lmlModelMetadata: {                
+                            model:{
+                                jsonFile,weights,metadata
+                            },
+                            data,                            
+                        },
                         loadedFrom: 'disk'
                     };
                 });
