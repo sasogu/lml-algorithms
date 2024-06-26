@@ -124,7 +124,7 @@ export function getSuffledAndSplittedTensorsAndValidationData(features, percenta
   return { inputTensor, outputTensor, validationData };
 }
 
-export function confusionMatrix(validationDataset, text_labels, model) {
+export function confusionMatrix(validationDataset, model) {
   if (!validationDataset) {
     return Promise.resolve({});
   }
@@ -140,12 +140,12 @@ export function confusionMatrix(validationDataset, text_labels, model) {
   return Promise.all(resultsPromise).then(results => {
     classificationResults = results.map(r => r[0][0]);
     let realResults = validationDataset.tensor_outputs.arraySync()
-      .map(r => text_labels[r.indexOf(1)]);
+      .map(r => model.labels[r.indexOf(1)]);
 
     validationDataset.tensor_inputs.dispose();
     validationDataset.tensor_outputs.dispose();
 
-    let validationData = { text_labels: text_labels, classified: classificationResults, real: realResults };
+    let validationData = { text_labels: model.labels, classified: classificationResults, real: realResults };
     console.log(validationData);
 
     let multi = [];
