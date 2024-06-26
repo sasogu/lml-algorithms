@@ -99,15 +99,23 @@ export class LMLSequential {
         }));
     }
 
-    saveToDisk() {
+    saveToDisk(datatype) {
         console.log("SAVING MODEL ZIP");
+
+        let metadata = {
+            modelAlgorithm: 'sequential',
+            labels: this.labels,
+            hyperparameters: this.hyperparams
+        };
+
         return this.saveToMemory().then(artifacts => {
             const zip = new JSZip();
 
             zip.file(this.name + ".json", JSON.stringify(artifacts.jsonFile));
             const weights = new Uint8Array(artifacts.weights);
             zip.file(this.name + ".weights.bin", weights);
-            zip.file(this.name + ".metadata", JSON.stringify(artifacts.lmlModelMetadata));
+            zip.file(this.name + ".metadata", JSON.stringify(metadata));
+            zip.file(this.name + ".datatype", JSON.stringify(datatype));
 
             return zip.generateAsync({ type: "blob" });
         }).then(content => {
