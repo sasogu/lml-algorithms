@@ -37,6 +37,19 @@ export class LMLSequential {
 
     serialize() {
 
+        function arrayBufferToBase64(buffer) {
+            // Crear una cadena binaria a partir del array de bytes
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+
+            // Convertir la cadena binaria a una cadena en formato Base64
+            return btoa(binary);
+        }
+
         let metadata = {
             modelAlgorithm: 'sequential',
             labels: this.labels,
@@ -48,7 +61,7 @@ export class LMLSequential {
                 return {
                     metadata: metadata,
                     jsonFile: artifacts.jsonFile,
-                    weights: artifacts.weights
+                    weights: arrayBufferToBase64(artifacts.weights)
                 }
             })
         } else {
