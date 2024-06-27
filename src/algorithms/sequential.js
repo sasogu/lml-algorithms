@@ -269,6 +269,7 @@ export class LMLSequential {
             return tf.loadLayersModel(tf.io.browserFiles([jsonFile, weights]))
                 .then(model => {
                     this.model = model;
+                    this.labels = metadata.labels;
                     return {
                         lmlModel: this,
                         lmlModelMetadata: {
