@@ -64,10 +64,12 @@ export class LMLModelFactory {
                 let model = LMLModelFactory.createModel(lmlModelMetadata.modelAlgorithm);
                 return model.loadForAutomousMode(modelZipContent);
             })
-        } else if (mode != 'autonomous' && localStorage.getItem('lmlModelMetadata') != null) {
-            metadata = JSON.parse(localStorage.getItem('lmlModelMetadata'));
-            let model = LMLModelFactory.createModel(metadata.model.modelAlgorithm);
-            return model.loadForLMLMode();
+        } else if (localStorage.getItem('lmlModel') != null) {
+            let lmlModel = JSON.parse(localStorage.getItem('lmlModel'));
+            let name = lmlModel.data.name;            
+            let model = LMLModelFactory.createModel(lmlModel.model.metadata.modelAlgorithm);
+            return model.loadFromLocalstorage();
+
         } else {
             let model = LMLModelFactory.createModel('sequential')
             let result = {
