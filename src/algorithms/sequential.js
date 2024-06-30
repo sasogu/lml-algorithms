@@ -67,7 +67,8 @@ export class LMLSequential {
         } else {
             return Promise.resolve({
                 metadata: metadata,
-                model: null
+                jsonFile: null,
+                weights: null,
             })
         }
     }
@@ -135,6 +136,133 @@ export class LMLSequential {
             return lmlModel;
         });
     }
+
+    loadFromLocalstorage() {
+
+        function jsonFileToFile(jsonFile) {
+            const jsonString = JSON.stringify(jsonFile);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const file = new File([blob], "model.json", { type: "application/json" });
+
+            return file;
+        }
+
+        function weightsToFile(weightsB64) {
+            const binaryString = atob(weightsB64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            const blob = new Blob([bytes.buffer], { type: 'application/octet-stream' });
+
+            const file = new File([blob], 'model.weights.bin', {
+                type: 'application/octet-stream',
+                lastModified: Date.now()
+            });
+
+            return file;
+        }
+
+        console.log("LoadFromLocalStorage");
+        let lmlModel = JSON.parse(localStorage.getItem('lmlModel'));
+        let jsonFile = lmlModel.model.jsonFile;
+        let weights = lmlModel.model.weights;
+        let metadata = lmlModel.model.metadata;
+        let data = lmlModel.data;
+        if ('jsonFile' in lmlModel.model && lmlModel.model.jsonFile) {
+            jsonFile = jsonFileToFile(jsonFile);
+            weights = weightsToFile(weights);
+            return tf.loadLayersModel(tf.io.browserFiles([jsonFile, weights]))
+                .then(model => {
+                    this.model = model;
+                    this.labels = metadata.labels;
+                    return {
+                        lmlModel: this,
+                        lmlModelMetadata: {
+                            model: {
+                                jsonFile, weights, metadata
+                            },
+                            data,
+                        },
+                        loadedFrom: 'localstorage'
+                    };
+                });
+        } else {
+            let lmlModel = {
+                lmlModel: this,
+                lmlModelMetadata: {
+                    model: {
+                        jsonFile, weights, metadata
+                    },
+                    data,
+                },
+                loadedFrom: 'localstorage'
+            };
+            return Promise.resolve(lmlModel);
+        }
+
+    }
+
+    loadFromZipContent(modelZipContent) {
+
+        let promises = [];
+
+        let name = Object.keys(modelZipContent.files)[0].split(".")[0];
+
+        let jsonFile = modelZipContent.files[name + '.json'];
+        let weightsFile = modelZipContent.files[name + '.weights.bin'];
+        let metadata = modelZipContent.files[name + '.metadata'];
+        let datatype = modelZipContent.files[name + '.datatype'];
+
+        promises.push(jsonFile.async("blob").then(blob => {
+            const file = new File([blob], jsonFile.name, {
+                type: blob.type
+            });
+            return file;
+        }));
+        promises.push(weightsFile.async("blob").then(blob => {
+            const file = new File([blob], weightsFile.name, {
+                type: blob.type
+            });
+            return file;
+        }));
+
+        promises.push(metadata.async("string").then(content => {
+            return JSON.parse(content);
+        }));
+
+        promises.push(datatype.async("string").then(content => {
+            return JSON.parse(content);
+        }));
+
+        return Promise.all(promises).then(r => {
+            console.log(r);
+            let jsonFile = r[0];
+            let weights = r[1];
+            let metadata = r[2];
+            let data = r[3];
+            return tf.loadLayersModel(tf.io.browserFiles([jsonFile, weights]))
+                .then(model => {
+                    this.model = model;
+                    this.labels = metadata.labels;
+                    return {
+                        lmlModel: this,
+                        lmlModelMetadata: {
+                            model: {
+                                jsonFile, weights, metadata
+                            },
+                            data,
+                        },
+                        loadedFrom: 'disk'
+                    };
+                });
+        })
+
+    }
+
 
     /**
      * 
@@ -216,156 +344,6 @@ export class LMLSequential {
             let result = getFormattedModelResult(this.model, info, tensors.validationData);
 
             return result;
-        });
-    }
-
-
-    load(mode, modelZipContent = null) {
-        if (mode == 'autonomous') {
-            return this.loadForAutomousMode(modelZipContent);
-        } else {
-            return this.loadForLMLMode();
-        }
-    }
-
-    loadFromLocalstorage() {
-
-        function jsonFileToFile(jsonFile) {
-            const jsonString = JSON.stringify(jsonFile);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const file = new File([blob], "model.json", { type: "application/json" });
-
-            return file;
-        }
-
-        function weightsToFile(weightsB64) {
-            const binaryString = atob(weightsB64);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-
-            const blob = new Blob([bytes.buffer], { type: 'application/octet-stream' });
-
-            const file = new File([blob], 'model.weights.bin', {
-                type: 'application/octet-stream',
-                lastModified: Date.now()
-            });
-        
-            return file;
-        }
-
-        console.log("LoadFromLocalStorage");
-        let lmlModel = JSON.parse(localStorage.getItem('lmlModel'));
-        let jsonFile = lmlModel.model.jsonFile;
-        let weights = lmlModel.model.weights;
-        let metadata = lmlModel.model.metadata;
-        let data = lmlModel.data;
-        if ('jsonFile' in lmlModel.model && lmlModel.model.jsonFile) {
-            jsonFile = jsonFileToFile(jsonFile);
-            weights = weightsToFile(weights);
-            return tf.loadLayersModel(tf.io.browserFiles([jsonFile, weights]))
-                .then(model => {
-                    this.model = model;
-                    this.labels = metadata.labels;
-                    return {
-                        lmlModel: this,
-                        lmlModelMetadata: {
-                            model: {
-                                jsonFile, weights, metadata
-                            },
-                            data,
-                        },
-                        loadedFrom: 'localstorage'
-                    };
-                });
-        } else {
-            let lmlModel = {
-                lmlModel: this,
-                lmlModelMetadata: {
-                    model: {
-                        jsonFile, weights, metadata
-                    },
-                    data,
-                },
-                loadedFrom: 'localstorage'
-            };
-            return Promise.resolve(lmlModel);
-        }
-
-    }
-
-    loadForAutomousMode(modelZipContent) {
-
-        let promises = [];
-
-        let name = Object.keys(modelZipContent.files)[0].split(".")[0];
-
-        let jsonFile = modelZipContent.files[name + '.json'];
-        let weightsFile = modelZipContent.files[name + '.weights.bin'];
-        let metadata = modelZipContent.files[name + '.metadata'];
-        let datatype = modelZipContent.files[name + '.datatype'];
-
-        promises.push(jsonFile.async("blob").then(blob => {
-            const file = new File([blob], jsonFile.name, {
-                type: blob.type
-            });
-            return file;
-        }));
-        promises.push(weightsFile.async("blob").then(blob => {
-            const file = new File([blob], weightsFile.name, {
-                type: blob.type
-            });
-            return file;
-        }));
-
-        promises.push(metadata.async("string").then(content => {
-            return JSON.parse(content);
-        }));
-
-        promises.push(datatype.async("string").then(content => {
-            return JSON.parse(content);
-        }));
-
-        return Promise.all(promises).then(r => {
-            console.log(r);
-            let jsonFile = r[0];
-            let weights = r[1];
-            let metadata = r[2];
-            let data = r[3];
-            return tf.loadLayersModel(tf.io.browserFiles([jsonFile, weights]))
-                .then(model => {
-                    this.model = model;
-                    this.labels = metadata.labels;
-                    return {
-                        lmlModel: this,
-                        lmlModelMetadata: {
-                            model: {
-                                jsonFile, weights, metadata
-                            },
-                            data,
-                        },
-                        loadedFrom: 'disk'
-                    };
-                });
-        })
-
-    }
-
-    loadForLMLMode() {
-        if (!localStorage.getItem('lmlModelMetadata')) {
-            return;
-        }
-
-        return tf.loadLayersModel('localstorage://lml').then(model => {
-            this.model = model;
-            return {
-                model: this,
-                lmlModelMetadata: JSON.parse(localStorage.getItem('lmlModelMetadata')),
-                loadedFrom: 'localstorage'
-            };
         });
     }
 
