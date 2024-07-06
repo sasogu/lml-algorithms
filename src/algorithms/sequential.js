@@ -112,11 +112,11 @@ export class LMLSequential {
         return this.saveToMemory().then(artifacts => {            
             const zip = new JSZip();
 
-            zip.file(datatype.name + ".json", JSON.stringify(artifacts.jsonFile));
+            zip.file("model.json", JSON.stringify(artifacts.jsonFile));
             const weights = new Uint8Array(artifacts.weights);
-            zip.file(datatype.name + ".weights.bin", weights);
-            zip.file(datatype.name + ".metadata", JSON.stringify(metadata));
-            zip.file(datatype.name + ".datatype", JSON.stringify(datatype));
+            zip.file("model.weights.bin", weights);
+            zip.file("model.metadata", JSON.stringify(metadata));
+            zip.file("model.datatype", JSON.stringify(datatype));
 
             return zip.generateAsync({ type: "blob" });
         }).then(content => {
