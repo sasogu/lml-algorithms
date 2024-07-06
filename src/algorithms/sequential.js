@@ -109,18 +109,18 @@ export class LMLSequential {
             hyperparameters: this.hyperparams
         };
 
-        return this.saveToMemory().then(artifacts => {
+        return this.saveToMemory().then(artifacts => {            
             const zip = new JSZip();
 
-            zip.file(this.name + ".json", JSON.stringify(artifacts.jsonFile));
+            zip.file(datatype.name + ".json", JSON.stringify(artifacts.jsonFile));
             const weights = new Uint8Array(artifacts.weights);
-            zip.file(this.name + ".weights.bin", weights);
-            zip.file(this.name + ".metadata", JSON.stringify(metadata));
-            zip.file(this.name + ".datatype", JSON.stringify(datatype));
+            zip.file(datatype.name + ".weights.bin", weights);
+            zip.file(datatype.name + ".metadata", JSON.stringify(metadata));
+            zip.file(datatype.name + ".datatype", JSON.stringify(datatype));
 
             return zip.generateAsync({ type: "blob" });
         }).then(content => {
-            saveAs(content, "lml_" + this.name + ".mdl");
+            saveAs(content, "lml_" + datatype.name + ".mdl");
             return 'model saved to disk';
         });
     }
