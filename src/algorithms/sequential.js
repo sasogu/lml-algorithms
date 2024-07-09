@@ -8,15 +8,9 @@ import {
 } from './util';
 
 /**
- * @typedef {Object} Dimensiones
- * @property {number} featureDim - dimensión del vector de características 
- * @property {number} numOfClasses - nº de clases
- */
-
-/**
  * @typedef {Object} InOutTensors
- * @property {number} inputTensor - Tensor de shape = [n, featureDim], hay n ejemplares
- *                                  codificados con un vector de dimensión featureDim
+ * @property {number} inputTensor  - Tensor de shape = [n, featureDim], hay n ejemplares
+ *                                   codificados con un vector de dimensión featureDim
  * @property {number} outputTensor - Tensor de shape = [n, numOfClasses], hay n ejemplares
  *                                   de vectores one-hot-encoded, cada uno de ellos representa 
  *                                   la clase a la que corresponde el ejemplar asociado.
@@ -312,9 +306,8 @@ export class LMLSequential {
     }
 
     /**
-     * 
-     * @param {Map(String, tf.Tensor)} features - Mapa de las `features` que han resultado 
-     *                                            del proceso de extracción de características
+     * @param {Map(String, tf.Tensor)} features      - Mapa de las `features` que han resultado 
+     *                                                 del proceso de extracción de características
      * @param {InOutTensors} percentageForValidation - porcentaje de datos que serán usados para validar
      *                                                 el modelo
      * @returns {Promise()}

@@ -301,9 +301,20 @@ class KNNClassifier {
     }
 }
 
+
+/**
+ * @typedef {Object} InOutTensors
+ * @property {number} inputTensor  - Tensor de shape = [n, featureDim], hay n ejemplares
+ *                                   codificados con un vector de dimensión featureDim
+ * @property {number} outputTensor - Tensor de shape = [n, numOfClasses], hay n ejemplares
+ *                                   de vectores one-hot-encoded, cada uno de ellos representa 
+ *                                   la clase a la que corresponde el ejemplar asociado.
+ */
+
 export class KNN {
 
     constructor() {
+        this.name = "model";
         this.model = null;
         this.labels = [];
         this.hyperparams = {
@@ -311,8 +322,8 @@ export class KNN {
         };
     }
 
-    getName(){
-        return 'knn';
+    serialize() {
+        return;
     }
 
 
@@ -320,6 +331,33 @@ export class KNN {
         this.hyperparams = params;
     }
 
+    saveToMemory() {
+        return;
+    }
+
+    saveToDisk(datatype) {
+        return;
+    }
+
+    saveToLocalstorage(datatype) {
+        return;
+    }
+
+    loadFromLocalstorage() {
+        return;
+    }
+
+    loadFromZipContent(modelZipContent) {
+        return;
+    }
+
+    /**
+     * @param {Map(String, tf.Tensor)} features      - Mapa de las `features` que han resultado 
+     *                                                 del proceso de extracción de características
+     * @param {InOutTensors} percentageForValidation - porcentaje de datos que serán usados para validar
+     *                                                 el modelo
+     * @returns {Promise()}
+     */
     train(features, percentageForValidation = 0) {
 
         this.labels = Array.from(features.keys());
@@ -347,12 +385,16 @@ export class KNN {
         return Promise.resolve(result);
     }
 
-    classify(inputTensor) {
-        let k = this.hyperparams.K;
+    classify(inputTensor, labels = null) {
+        // Si se ejecutó train antes de classify, this.labels está rellena, pero 
+        // si se ejecutó classify sin llamar antes a train (esto pasa cuando se carga 
+        // un modelo desde el localstorage) hay que pasar la lista de labels        
+        let _labels = (labels == null) ? this.labels : labels
+        let k = this.hyperparams.K;        
         return this.model.predictClass(inputTensor, k).then(prediction => {
             let results = [];
             for (let i in prediction.confidences) {
-                results.push([this.labels[i], prediction.confidences[i]]);
+                results.push([_labels[i], prediction.confidences[i]]);
             }
             results.sort((a, b) => b[1] - a[1]);
             inputTensor.dispose();
