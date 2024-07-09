@@ -109,7 +109,7 @@ export class LMLSequential {
             hyperparameters: this.hyperparams
         };
 
-        return this.saveToMemory().then(artifacts => {            
+        return this.saveToMemory().then(artifacts => {
             const zip = new JSZip();
 
             zip.file("model.json", JSON.stringify(artifacts.jsonFile));
@@ -348,22 +348,27 @@ export class LMLSequential {
     }
 
     classify(inputTensor, labels = null) {
-        const prediction = this.model.predict(inputTensor);
-        inputTensor.dispose();
-        const predictions = prediction.dataSync();
-        console.log(predictions);
-        console.log(this.labels);
+        try {
+            const prediction = this.model.predict(inputTensor);
+            inputTensor.dispose();
+            const predictions = prediction.dataSync();
+            console.log(predictions);
+            console.log(this.labels);
 
-        // Si se ejecutó train antes de classify, this.labels está rellena, pero 
-        // si se ejecutó classify sin llamar antes a train (esto pasa cuando se carga 
-        // un modelo desde el localstorage) hay que pasar la lista de labels        
-        let _labels = (labels == null) ? this.labels : labels
-        const arr_predictions = Array.from(predictions);
-        let results = [];
-        for (let i = 0; i < arr_predictions.length; i++) {
-            results.push([_labels[i], arr_predictions[i]]);
+            // Si se ejecutó train antes de classify, this.labels está rellena, pero 
+            // si se ejecutó classify sin llamar antes a train (esto pasa cuando se carga 
+            // un modelo desde el localstorage) hay que pasar la lista de labels        
+            let _labels = (labels == null) ? this.labels : labels
+            const arr_predictions = Array.from(predictions);
+            let results = [];
+            for (let i = 0; i < arr_predictions.length; i++) {
+                results.push([_labels[i], arr_predictions[i]]);
+            }
+            results.sort((a, b) => b[1] - a[1]);
+            return Promise.resolve(results);
+        } catch (error) {
+            return Promise.reject(error);
         }
-        results.sort((a, b) => b[1] - a[1]);
-        return new Promise((resolve, reject) => { resolve(results) });
+        
     }
 }
