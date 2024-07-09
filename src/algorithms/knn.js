@@ -320,10 +320,70 @@ export class KNN {
         this.hyperparams = {
             K: 5,
         };
+        this.features = new Map();
+    }
+
+    serializeMap(m) {
+        const serializableMap = {};
+        let promises = [];
+        m.forEach((value, key) => {
+            promises.push(value.array().then(array => {
+                return JSON.stringify(array);
+            }));
+        });
+
+        return Promise.all(promises).then(array_tensors => {
+
+            let i = 0;
+            m.forEach((value, key) => {
+                serializableMap[key] = array_tensors[i];
+                i++;
+            });
+            console.log(serializableMap);
+            return serializableMap;
+        });
+
+    }
+
+    deserializeToMap(s) {
+        const serializado = s;
+        if (serializado) {
+            const serializableMap = JSON.parse(serializado);
+            const mapConSet = new Map();
+            Object.keys(serializableMap).forEach((key) => {
+                // Convertir el array de vuelta a un Set
+                mapConSet.set(key, new Set(serializableMap[key]));
+            });
+            return mapConSet;
+        }
+        return new Map();
     }
 
     serialize() {
-        return;
+
+        let metadata = {
+            modelAlgorithm: 'knn',
+            labels: this.labels,
+            hyperparameters: this.hyperparams
+        };
+
+        let examples;
+        if (this.model != null) {
+            return this.serializeMap(this.features).then(examples => {
+                return {
+                    metadata: metadata,
+                    examples: examples
+                }
+            });
+        } else {
+            return Promise.resolve({
+                metadata: metadata,
+                examples: examples
+            });
+        }
+
+
+        ;
     }
 
 
@@ -340,7 +400,15 @@ export class KNN {
     }
 
     saveToLocalstorage(datatype) {
-        return;
+        return this.serialize().then(serializedModel => {
+            let lmlModel = {
+                model: serializedModel,
+                data: datatype,
+            };
+            localStorage.setItem('lmlModel', JSON.stringify(lmlModel));
+
+            return lmlModel;
+        });
     }
 
     loadFromLocalstorage() {
@@ -359,6 +427,8 @@ export class KNN {
      * @returns {Promise()}
      */
     train(features, percentageForValidation = 0) {
+
+        this.features = features;
 
         this.labels = Array.from(features.keys());
         let tensors = getSuffledAndSplittedTensorsAndValidationData(features, percentageForValidation);
@@ -390,7 +460,7 @@ export class KNN {
         // si se ejecutó classify sin llamar antes a train (esto pasa cuando se carga 
         // un modelo desde el localstorage) hay que pasar la lista de labels        
         let _labels = (labels == null) ? this.labels : labels
-        let k = this.hyperparams.K;        
+        let k = this.hyperparams.K;
         return this.model.predictClass(inputTensor, k).then(prediction => {
             let results = [];
             for (let i in prediction.confidences) {
