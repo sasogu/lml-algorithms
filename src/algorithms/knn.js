@@ -445,7 +445,44 @@ export class KNN {
     }
 
     loadFromZipContent(modelZipContent) {
-        return;
+        let promises = [];
+
+        let name = Object.keys(modelZipContent.files)[0].split(".")[0];
+
+        let examples = modelZipContent.files[name + '.examples'];
+        let metadata = modelZipContent.files[name + '.metadata'];
+        let datatype = modelZipContent.files[name + '.datatype'];
+
+        promises.push(examples.async("string").then(content => {
+            return JSON.parse(content);
+        }));
+
+        promises.push(metadata.async("string").then(content => {
+            return JSON.parse(content);
+        }));
+
+        promises.push(datatype.async("string").then(content => {
+            return JSON.parse(content);
+        }));
+
+        return Promise.all(promises).then(r => {
+            let examples = r[0];
+            let metadata = r[1];
+            let data = r[2];
+            return this.examplesToKNN(examples).then(r => {
+                this.labels = metadata.labels;
+                return {
+                    lmlModel: this,
+                    lmlModelMetadata: {
+                        model: {
+                            examples, metadata
+                        },
+                        data: data
+                    },
+                    loadedFrom: 'disk'
+                }
+            })
+        });
     }
 
     /**
