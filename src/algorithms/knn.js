@@ -1,4 +1,6 @@
 import * as tf from '@tensorflow/tfjs-core';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import {
     getFormattedModelResult,
     getSuffledAndSplittedTensorsAndValidationData
@@ -328,7 +330,7 @@ export class KNN {
         let promises = [];
         m.forEach((value, key) => {
             promises.push(value.array().then(array => {
-                return JSON.stringify(array);
+                return array;
             }));
         });
 
@@ -345,18 +347,16 @@ export class KNN {
 
     }
 
-    deserializeToMap(s) {
-        const serializado = s;
-        if (serializado) {
-            const serializableMap = JSON.parse(serializado);
-            const mapConSet = new Map();
-            Object.keys(serializableMap).forEach((key) => {
-                // Convertir el array de vuelta a un Set
-                mapConSet.set(key, new Set(serializableMap[key]));
-            });
-            return mapConSet;
-        }
-        return new Map();
+    examplesToKNN(examples) {
+
+        const features = new Map();
+        Object.keys(examples).forEach((key) => {
+            let t = tf.tensor2d(examples[key]);
+            features.set(key, t);
+        });
+
+        return this.train(features);
+
     }
 
     serialize() {
@@ -381,9 +381,6 @@ export class KNN {
                 examples: examples
             });
         }
-
-
-        ;
     }
 
 
@@ -396,7 +393,20 @@ export class KNN {
     }
 
     saveToDisk(datatype) {
-        return;
+        console.log("SAVING MODEL ZIP");
+
+        this.serialize().then(artifacts => {
+            const zip = new JSZip();
+
+            zip.file("model.examples", JSON.stringify(artifacts.examples));
+            zip.file("model.metadata", JSON.stringify(artifacts.metadata));
+            zip.file("model.datatype", JSON.stringify(datatype));
+
+            return zip.generateAsync({ type: "blob" });
+        }).then(content => {
+            saveAs(content, "lml-knn_" + datatype.name + ".mdl");
+            return 'model saved to disk';
+        });
     }
 
     saveToLocalstorage(datatype) {
@@ -412,7 +422,26 @@ export class KNN {
     }
 
     loadFromLocalstorage() {
-        return;
+
+        let lmlModel = JSON.parse(localStorage.getItem('lmlModel'));
+
+        if ('examples' in lmlModel.model) {
+            return this.examplesToKNN(lmlModel.model.examples).then(r => {
+                return {
+                    lmlModel: this,
+                    lmlModelMetadata: JSON.parse(localStorage.getItem('lmlModel')),
+                    loadedFrom: 'localstorage'
+                }
+            })
+        } else {
+            let m = {
+                lmlModel: this,
+                lmlModelMetadata: JSON.parse(localStorage.getItem('lmlModel')),
+                loadedFrom: 'localstorage'
+            }
+            return Promise.resolve(m);
+        }
+
     }
 
     loadFromZipContent(modelZipContent) {
