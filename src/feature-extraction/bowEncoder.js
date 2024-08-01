@@ -19,6 +19,10 @@ function buildVocabulary(texts) {
     return vocabulary;
 }
 
+function setVocabulary(_vocabulary){
+    vocabulary = _vocabulary;
+}
+
 // Función para codificar los textos en vectores BoW
 function bowEncoder(texts) {    
     const vectors = texts.map(text => {
@@ -38,5 +42,6 @@ function bowEncoder(texts) {
 
 export {
     buildVocabulary,
+    setVocabulary,
     bowEncoder
 }

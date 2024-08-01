@@ -197,6 +197,8 @@ export class LMLSequential {
         let jsonFile = lmlModel.model.jsonFile;
         let weights = lmlModel.model.weights;
         let metadata = lmlModel.model.metadata;
+        let features = lmlModel.model.features;
+        let encoder = lmlModel.encoder;
         let data = lmlModel.data;
         if ('jsonFile' in lmlModel.model && lmlModel.model.jsonFile) {
             jsonFile = jsonFileToFile(jsonFile);
@@ -209,9 +211,10 @@ export class LMLSequential {
                         lmlModel: this,
                         lmlModelMetadata: {
                             model: {
-                                jsonFile, weights, metadata
+                                jsonFile, weights, metadata, features
                             },
                             data,
+                            encoder
                         },
                         loadedFrom: 'localstorage'
                     };
@@ -221,9 +224,10 @@ export class LMLSequential {
                 lmlModel: this,
                 lmlModelMetadata: {
                     model: {
-                        jsonFile, weights, metadata
+                        jsonFile, weights, metadata, features
                     },
                     data,
+                    encoder
                 },
                 loadedFrom: 'localstorage'
             };
