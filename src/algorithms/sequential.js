@@ -27,6 +27,29 @@ export class LMLSequential {
             batchSize: 10,
             epochs: 20
         };
+        this.features = new Map();
+    }
+
+    serializeMap(m) {
+        const serializableMap = {};
+        let promises = [];
+        m.forEach((value, key) => {
+            promises.push(value.array().then(array => {
+                return array;
+            }));
+        });
+
+        return Promise.all(promises).then(array_tensors => {
+
+            let i = 0;
+            m.forEach((value, key) => {
+                serializableMap[key] = array_tensors[i];
+                i++;
+            });
+            console.log(serializableMap);
+            return serializableMap;
+        });
+
     }
 
     serialize() {
@@ -51,18 +74,26 @@ export class LMLSequential {
         };
 
         if (this.model != null) {
-            return this.saveToMemory().then(artifacts => {
+            let promises = [
+                this.saveToMemory(), 
+                this.serializeMap(this.features)
+            ];
+
+            return Promise.all(promises).then(artifacts => {
+                console.log(artifacts);
                 return {
                     metadata: metadata,
-                    jsonFile: artifacts.jsonFile,
-                    weights: arrayBufferToBase64(artifacts.weights)
+                    jsonFile: artifacts[0].jsonFile,
+                    weights: arrayBufferToBase64(artifacts[0].weights),
+                    examples: artifacts[1]
                 }
-            })
+            })            
         } else {
             return Promise.resolve({
                 metadata: metadata,
                 jsonFile: null,
                 weights: null,
+                examples: null
             })
         }
     }
@@ -119,11 +150,12 @@ export class LMLSequential {
         });
     }
 
-    saveToLocalstorage(datatype) {
+    saveToLocalstorage(datatype, encoder) {
         return this.serialize().then(serializedModel => {
             let lmlModel = {
                 model: serializedModel,
                 data: datatype,
+                encoder: encoder
             };
             localStorage.setItem('lmlModel', JSON.stringify(lmlModel));
 
@@ -314,6 +346,7 @@ export class LMLSequential {
      */
     train(features, percentageForValidation = 0) {
 
+        this.features = features;
         this.labels = Array.from(features.keys());
         let dims = getFeatureAndNumOfClasses(features);
         let tensors = getSuffledAndSplittedTensorsAndValidationData(features, percentageForValidation);

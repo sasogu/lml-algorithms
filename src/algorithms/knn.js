@@ -409,11 +409,12 @@ export class KNN {
         });
     }
 
-    saveToLocalstorage(datatype) {
+    saveToLocalstorage(datatype, encoder) {
         return this.serialize().then(serializedModel => {
             let lmlModel = {
                 model: serializedModel,
                 data: datatype,
+                encoder: encoder
             };
             localStorage.setItem('lmlModel', JSON.stringify(lmlModel));
 

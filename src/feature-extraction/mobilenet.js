@@ -12,10 +12,10 @@ let urlBaseModels;
  */
 export function getMobilenetEncoder(url) {
   urlBaseModels = url;
-  return encoder;
+  return mobilenetEncoder;
 }
 
-function encoder(items) {
+function mobilenetEncoder(items) {
   if (mobilenet == null) {
     mobilenet = new MobilenetService(urlBaseModels).get();
   }
