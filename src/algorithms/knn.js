@@ -367,18 +367,18 @@ export class KNN {
             hyperparameters: this.hyperparams
         };
 
-        let examples;
+        let features;
         if (this.model != null) {
-            return this.serializeMap(this.features).then(examples => {
+            return this.serializeMap(this.features).then(features => {
                 return {
                     metadata: metadata,
-                    examples: examples
+                    features: features
                 }
             });
         } else {
             return Promise.resolve({
                 metadata: metadata,
-                examples: examples
+                features: features
             });
         }
     }
@@ -398,7 +398,7 @@ export class KNN {
         this.serialize().then(artifacts => {
             const zip = new JSZip();
 
-            zip.file("model.examples", JSON.stringify(artifacts.examples));
+            zip.file("model.features", JSON.stringify(artifacts.features));
             zip.file("model.metadata", JSON.stringify(artifacts.metadata));
             zip.file("model.datatype", JSON.stringify(datatype));
 
@@ -426,8 +426,8 @@ export class KNN {
 
         let lmlModel = JSON.parse(localStorage.getItem('lmlModel'));
 
-        if ('examples' in lmlModel.model) {
-            return this.examplesToKNN(lmlModel.model.examples).then(r => {
+        if ('features' in lmlModel.model) {
+            return this.examplesToKNN(lmlModel.model.features).then(r => {
                 return {
                     lmlModel: this,
                     lmlModelMetadata: JSON.parse(localStorage.getItem('lmlModel')),
@@ -450,11 +450,11 @@ export class KNN {
 
         let name = Object.keys(modelZipContent.files)[0].split(".")[0];
 
-        let examples = modelZipContent.files[name + '.examples'];
+        let features = modelZipContent.files[name + '.features'];
         let metadata = modelZipContent.files[name + '.metadata'];
         let datatype = modelZipContent.files[name + '.datatype'];
 
-        promises.push(examples.async("string").then(content => {
+        promises.push(features.async("string").then(content => {
             return JSON.parse(content);
         }));
 
@@ -467,16 +467,16 @@ export class KNN {
         }));
 
         return Promise.all(promises).then(r => {
-            let examples = r[0];
+            let features = r[0];
             let metadata = r[1];
             let data = r[2];
-            return this.examplesToKNN(examples).then(r => {
+            return this.examplesToKNN(features).then(r => {
                 this.labels = metadata.labels;
                 return {
                     lmlModel: this,
                     lmlModelMetadata: {
                         model: {
-                            examples, metadata
+                            features, metadata
                         },
                         data: data
                     },

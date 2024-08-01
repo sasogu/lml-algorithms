@@ -85,7 +85,7 @@ export class LMLSequential {
                     metadata: metadata,
                     jsonFile: artifacts[0].jsonFile,
                     weights: arrayBufferToBase64(artifacts[0].weights),
-                    examples: artifacts[1]
+                    features: artifacts[1]
                 }
             })            
         } else {
@@ -93,7 +93,7 @@ export class LMLSequential {
                 metadata: metadata,
                 jsonFile: null,
                 weights: null,
-                examples: null
+                features: null
             })
         }
     }
