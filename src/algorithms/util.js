@@ -38,7 +38,7 @@ export function getInputAndOutputTensors(features) {
 
   let j = 0;
   for (let label of features.keys()) {
-    let i = 0;    
+    let i = 0;
     let t = features.get(label);
     let f = tf.unstack(t);
     for (let n = 0; n < t.shape[0]; n++) {
@@ -216,4 +216,55 @@ export function confusionMatrix(validationDataset, model) {
 
     return dataForPlotly;
   });
+}
+
+
+export function transformObjectToMapWithTensors(inputObj) {
+  const newMap = new Map();
+  for (const key in inputObj) {
+    if (inputObj.hasOwnProperty(key)) {
+      const tensor = tf.tensor(inputObj[key]);
+      newMap.set(key, tensor);
+    }
+  }
+  return newMap;
+}
+
+export function combineMapsOfTensors(map1, map2) {
+  const combinedMap = new Map();
+
+  // Combinar todas las claves de ambos mapas
+  const allKeys = new Set([...map1.keys(), ...map2.keys()]);
+
+  allKeys.forEach(key => {
+    const tensor1 = map1.get(key);
+    const tensor2 = map2.get(key);
+
+    if (tensor1 && tensor2) {
+      // Concatenar los tensores si ambos existen
+      const combinedTensor = tf.concat([tensor1, tensor2], 0); // Concatenar a lo largo de la primera dimensión
+      combinedMap.set(key, combinedTensor);
+    } else if (tensor1) {
+      // Si solo existe tensor1
+      combinedMap.set(key, tensor1);
+    } else if (tensor2) {
+      // Si solo existe tensor2
+      combinedMap.set(key, tensor2);
+    }
+  });
+
+  return combinedMap;
+}
+
+export function extendArraysInObject(inputObj, extraLength) {
+  const newObj = {};
+  for (const key in inputObj) {
+    if (inputObj.hasOwnProperty(key)) {
+      newObj[key] = inputObj[key].map(arr => {
+        // Rellenar con ceros hasta alcanzar la longitud deseada
+        return [...arr, ...new Array(extraLength).fill(0)];
+      });
+    }
+  }
+  return newObj;
 }

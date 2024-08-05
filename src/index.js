@@ -6,7 +6,12 @@ import { bowEncoder, buildVocabulary, setVocabulary } from "./feature-extraction
 import { LMLSequential } from "./algorithms/sequential";
 import { KNN } from "./algorithms/knn";
 import { LMLModelFactory } from "./algorithms/modelFactory";
-import { confusionMatrix } from "./algorithms/util";
+import {
+        confusionMatrix,
+        transformObjectToMapWithTensors,
+        combineMapsOfTensors,
+        extendArraysInObject
+} from "./algorithms/util";
 
 export {
         getMobilenetEncoder,
@@ -18,5 +23,8 @@ export {
         LMLSequential,
         KNN,
         LMLModelFactory,
-        confusionMatrix
+        confusionMatrix,
+        transformObjectToMapWithTensors,
+        combineMapsOfTensors,
+        extendArraysInObject
 }
