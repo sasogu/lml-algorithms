@@ -522,16 +522,13 @@ export class KNN {
         return Promise.resolve(result);
     }
 
-    classify(inputTensor, labels = null) {
-        // Si se ejecutó train antes de classify, this.labels está rellena, pero 
-        // si se ejecutó classify sin llamar antes a train (esto pasa cuando se carga 
-        // un modelo desde el localstorage) hay que pasar la lista de labels        
-        let _labels = (labels == null) ? this.labels : labels
+    classify(inputTensor) {
+                      
         let k = this.hyperparams.K;
         return this.model.predictClass(inputTensor, k).then(prediction => {
             let results = [];
             for (let i in prediction.confidences) {
-                results.push([_labels[i], prediction.confidences[i]]);
+                results.push([this.labels[i], prediction.confidences[i]]);
             }
             results.sort((a, b) => b[1] - a[1]);
             inputTensor.dispose();
