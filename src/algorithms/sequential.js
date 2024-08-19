@@ -28,6 +28,8 @@ export class LMLSequential {
             epochs: 20
         };
         this.features = new Map();
+        this.info = null;
+        this.percentageForValidation = 0;
     }
 
     serializeMap(m) {
@@ -75,7 +77,7 @@ export class LMLSequential {
 
         if (this.model != null) {
             let promises = [
-                this.saveToMemory(), 
+                this.saveToMemory(),
                 this.serializeMap(this.features)
             ];
 
@@ -87,7 +89,7 @@ export class LMLSequential {
                     weights: arrayBufferToBase64(artifacts[0].weights),
                     features: artifacts[1]
                 }
-            })            
+            })
         } else {
             return Promise.resolve({
                 metadata: metadata,
@@ -348,8 +350,9 @@ export class LMLSequential {
      *                                                 el modelo
      * @returns {Promise()}
      */
-    train(features, percentageForValidation = 0) {
+    train(features, percentageForValidation = 0, onBatchEnd = null) {
 
+        this.percentageForValidation = percentageForValidation;
         this.features = features;
         this.labels = Array.from(features.keys());
         let dims = getFeatureAndNumOfClasses(features);
@@ -358,8 +361,10 @@ export class LMLSequential {
         ////////////// SEQUENTIAL /////////////
         this.model = this.buildModel(dims.featureDim, dims.numOfClasses);
 
-        function onBatchEnd(batch, logs) {
-            console.log('Accuracy', logs.acc);
+        if (onBatchEnd == null) {
+            onBatchEnd = (batch, logs) => {
+                console.log('Accuracy', logs.acc);
+            }
         }
 
         //Train for 5 epochs with batch size of 32.
@@ -371,8 +376,8 @@ export class LMLSequential {
             //validationSplit: this.params.neural_network.validationSplit/100,
             validationData: tensors.validationData
         }).then(info => {
-            let result = getFormattedModelResult(this.model, info, tensors.validationData);
-
+            this.info = info;
+            let result = getFormattedModelResult(this.model, info, tensors.validationData);            
             return result;
         });
     }
@@ -384,7 +389,7 @@ export class LMLSequential {
             const predictions = prediction.dataSync();
             console.log(predictions);
             console.log(this.labels);
-            
+
             const arr_predictions = Array.from(predictions);
             let results = [];
             for (let i = 0; i < arr_predictions.length; i++) {
@@ -395,6 +400,52 @@ export class LMLSequential {
         } catch (error) {
             return Promise.reject(error);
         }
-        
+
+    }
+
+    dataForHistoryPlotly() {
+        let data = [];
+
+        let filters = this.percentageForValidation == 0 ?
+            [true, true] :
+            [true, true, true, true];
+            
+        let traces = ["acc", "loss", "val_acc", "val_loss"]
+        let _traces = []
+        for (let index in filters) {
+            if (filters[index]) _traces.push(traces[index])
+        }
+
+        for (let trace of _traces) {
+            let xs = [];
+            let ys = [];
+            for (let indexEpoch in this.info.epoch) {
+                xs.push(this.info.epoch[indexEpoch]),
+                    ys.push(this.info.history[trace][indexEpoch])
+            }
+
+            data.push({
+                x: xs,
+                y: ys,
+                type: 'scatter',
+                name: trace
+            })
+        }
+
+        return {
+            data: data,
+            layout: {
+                width: 600,
+                height: 400,
+                title: 'Learning evolution',
+                xaxis: {
+                    title: 'Epoch'
+                },
+                yaxis: {
+                    title: 'Acc. / Loss/'
+                }
+            }
+        };
+
     }
 }
