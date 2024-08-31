@@ -32,6 +32,11 @@ export class LMLSequential {
         this.percentageForValidation = 0;
     }
 
+    getAlgorithmName(){
+
+        return "LMLSequential";
+    }
+
     serializeMap(m) {
         const serializableMap = {};
         let promises = [];

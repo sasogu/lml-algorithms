@@ -325,6 +325,11 @@ export class KNN {
         this.features = new Map();
     }
 
+    getAlgorithmName(){
+
+        return "KNN";
+    }
+
     serializeMap(m) {
         const serializableMap = {};
         let promises = [];
