@@ -16,7 +16,7 @@ async function getAudioData(base64Audio) {
 
     // Decodifica los datos de audio
     let audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    
+
     // Obtén el canal 0 (por ejemplo, el canal izquierdo en caso de ser estéreo)
     let channelData = audioBuffer.getChannelData(0);  // Datos de audio en formato Float32Array
 
@@ -31,32 +31,34 @@ function hammingWindow(size) {
     return window;
 }
 
-async function calculateFFT(base64Audio) {    
-   // Paso 1 y 2: Obtén los datos de audio
-   let audioData = await getAudioData(base64Audio);
-    
-   // Asegúrate de que haya suficientes muestras (al menos 512)
-   if (audioData.length < 512) {
-       throw new Error("El audio no tiene suficientes muestras para aplicar una ventana de Hamming de 512.");
-   }
+async function calculateFFT(base64Audio) {
 
-   // Paso 3: Aplica la ventana de Hamming
-   let hamming = hammingWindow(512);
+    let hammingSize = 1024;
+    // Paso 1 y 2: Obtén los datos de audio
+    let audioData = await getAudioData(base64Audio);
 
-   // Tomamos las primeras 512 muestras del audio
-   let windowedAudio = audioData.slice(0, 512).map((sample, index) => sample * hamming[index]);
+    // Asegúrate de que haya suficientes muestras (al menos 512)
+    if (audioData.length < hammingSize) {
+        throw new Error("El audio no tiene suficientes muestras para aplicar una ventana de Hamming de 512.");
+    }
 
-   // Convierte los datos de audio con ventana a un tensor de TensorFlow
-   let audioTensor = tf.tensor1d(windowedAudio);
-   
-   // Calcula la FFT
-   let fftResult = tf.spectral.rfft(audioTensor);
+    // Paso 3: Aplica la ventana de Hamming
+    let hamming = hammingWindow(hammingSize);
 
-   // Opcional: Convierte el resultado complejo en magnitudes
-   let magnitude = tf.abs(fftResult);
+    // Tomamos las primeras 512 muestras del audio
+    let windowedAudio = audioData.slice(0, hammingSize).map((sample, index) => sample * hamming[index]);
 
-   // Devuelve el resultado como un array
-   return magnitude;
+    // Convierte los datos de audio con ventana a un tensor de TensorFlow
+    let audioTensor = tf.tensor1d(windowedAudio);
+
+    // Calcula la FFT
+    let fftResult = tf.spectral.rfft(audioTensor);
+
+    // Opcional: Convierte el resultado complejo en magnitudes
+    let magnitude = tf.abs(fftResult);
+
+    // Devuelve el resultado como un array
+    return magnitude;
 }
 
 export function audioEncoder(samples) {
@@ -67,9 +69,9 @@ export function audioEncoder(samples) {
         promises.push(calculateFFT(sample));
     }
 
-    return Promise.all(promises).then(features =>{
+    return Promise.all(promises).then(features => {
         return tf.stack(features);
     });
 
-       
+
 }
