@@ -1,66 +1,37 @@
 import * as tf from '@tensorflow/tfjs';
+import * as speechCommands from '@tensorflow-models/speech-commands';
 
-function base64ToArrayBuffer(base64) {
-    let binaryString = atob(base64);
-    let len = binaryString.length;
-    let bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
+let transferRecognizer;
+
+(async function initSpeechCommands() {
+
+    const baseRecognizer = speechCommands.create('BROWSER_FFT');
+    await baseRecognizer.ensureModelLoaded();
+
+    transferRecognizer = baseRecognizer.createTransfer("audio-model");
+
+    console.log("transferRecognizer");
+    console.log(transferRecognizer);
+})()
+
+export function collectExample(label) {
+
+    let options = {
+        includeRawAudio: true
+    };
+
+    return transferRecognizer.collectExample(label, options).then(spectrogram => {
+        console.log(spectrogram);
+        console.log(transferRecognizer);
+
+        const lastKey = Object.keys(transferRecognizer.dataset.examples).pop();
+
+        // Obtener el valor correspondiente a esa clave
+        const lastValue = transferRecognizer.dataset.examples[lastKey];
+
+        return lastValue;
+    })
 }
-
-async function getAudioData(base64Audio) {
-    let arrayBuffer = base64ToArrayBuffer(base64Audio);
-    let audioContext = new AudioContext();
-
-    // Decodifica los datos de audio
-    let audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-    // Obtén el canal 0 (por ejemplo, el canal izquierdo en caso de ser estéreo)
-    let channelData = audioBuffer.getChannelData(0);  // Datos de audio en formato Float32Array
-
-    return channelData;
-}
-
-function hammingWindow(size) {
-    let window = new Float32Array(size);
-    for (let i = 0; i < size; i++) {
-        window[i] = 0.54 - 0.46 * Math.cos((2 * Math.PI * i) / (size - 1));
-    }
-    return window;
-}
-
-async function calculateFFT(base64Audio) {
-
-    let hammingSize = 1024;
-    // Paso 1 y 2: Obtén los datos de audio
-    let audioData = await getAudioData(base64Audio);
-
-    // Asegúrate de que haya suficientes muestras (al menos 512)
-    if (audioData.length < hammingSize) {
-        throw new Error("El audio no tiene suficientes muestras para aplicar una ventana de Hamming de 512.");
-    }
-
-    // Paso 3: Aplica la ventana de Hamming
-    let hamming = hammingWindow(hammingSize);
-
-    // Tomamos las primeras 512 muestras del audio
-    let windowedAudio = audioData.slice(0, hammingSize).map((sample, index) => sample * hamming[index]);
-
-    // Convierte los datos de audio con ventana a un tensor de TensorFlow
-    let audioTensor = tf.tensor1d(windowedAudio);
-
-    // Calcula la FFT
-    let fftResult = tf.spectral.rfft(audioTensor);
-
-    // Opcional: Convierte el resultado complejo en magnitudes
-    let magnitude = tf.abs(fftResult);
-
-    // Devuelve el resultado como un array
-    return magnitude;
-}
-
 export function audioEncoder(samples) {
 
     let promises = [];

@@ -1,7 +1,7 @@
 import { getMobilenetEncoder } from "./feature-extraction/mobilenet";
 import { numericalEncoder } from "./feature-extraction/numerical";
 import { useEncoder } from "./feature-extraction/useEncoder";
-import { audioEncoder } from "./feature-extraction/audioEncoder";
+import { audioEncoder, collectExample } from "./feature-extraction/audioEncoder";
 import { bowEncoder, buildVocabulary, setVocabulary } from "./feature-extraction/bowEncoder";
 
 import { LMLSequential } from "./algorithms/sequential";
@@ -20,6 +20,7 @@ export {
         useEncoder,
         bowEncoder,
         audioEncoder,
+        collectExample,
         buildVocabulary,
         setVocabulary,
         LMLSequential,
