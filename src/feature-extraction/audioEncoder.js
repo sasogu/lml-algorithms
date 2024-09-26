@@ -23,14 +23,14 @@ export function collectExample(label) {
 
     return transferRecognizer.collectExample(label, options).then(spectrogram => {
         console.log(transferRecognizer.dataset.examples);
-
-        // Obtener la última clave
-        const ultimaClave = Object.keys(transferRecognizer.dataset.examples).pop();
-
-        // Obtener el valor correspondiente a esa clave
-        const ultimoValor = transferRecognizer.dataset.examples[ultimaClave];
-
-        return ultimoValor.spectrogram;
+        
+        const example = transferRecognizer.dataset.examples[0];
+        // elimino el elemento del dataset para que no se vayan acumulando y, así,
+        // ahorrar memoria. Esto lo hago porque solo uso el `transferReconizer` para
+        // recolectar muestras de audio, no para hacer transfer learning, que es el
+        // objetivo principal de este objeto.
+        transferRecognizer.dataset.examples.shift();
+        return example.spectrogram;
     });
 }
 export function audioEncoder(spectrograms) {
