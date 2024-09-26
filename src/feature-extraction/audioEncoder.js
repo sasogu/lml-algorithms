@@ -1,11 +1,12 @@
 import * as tf from '@tensorflow/tfjs';
 import * as speechCommands from '@tensorflow-models/speech-commands';
 
+let baseRecognizer;
 let transferRecognizer;
 
 (async function initSpeechCommands() {
 
-    const baseRecognizer = speechCommands.create('BROWSER_FFT');
+    baseRecognizer = speechCommands.create('BROWSER_FFT');
     await baseRecognizer.ensureModelLoaded();
 
     transferRecognizer = baseRecognizer.createTransfer("audio-model");
@@ -17,32 +18,27 @@ let transferRecognizer;
 export function collectExample(label) {
 
     let options = {
-        includeRawAudio: true
+        includeRawAudio: false,
     };
 
-    return transferRecognizer.collectExample(label, options).then(spectrogram => {
-        console.log(spectrogram);
-        console.log(transferRecognizer);
-
-        const lastKey = Object.keys(transferRecognizer.dataset.examples).pop();
-
-        // Obtener el valor correspondiente a esa clave
-        const lastValue = transferRecognizer.dataset.examples[lastKey];
-
-        return lastValue;
-    })
+    return transferRecognizer.collectExample(label, options);
 }
-export function audioEncoder(samples) {
+export function audioEncoder(spectrograms) {
 
-    let promises = [];
+    let embeddingsPromise = [];
+    for (let spec of spectrograms) {
+        const x = tf.tensor4d(
+            spec, [1].concat(baseRecognizer.modelInputShape().slice(1)));
+        
+        let embedding = baseRecognizer.recognize(x, { includeEmbedding: true })
+            .then(result => {
+                return result.embedding.reshape([result.embedding.shape[1]]);
+            });
 
-    for (let sample of samples) {
-        promises.push(calculateFFT(sample));
+        embeddingsPromise.push(embedding);
     }
 
-    return Promise.all(promises).then(features => {
+    return Promise.all(embeddingsPromise).then(features => {
         return tf.stack(features);
-    });
-
-
+    })
 }
