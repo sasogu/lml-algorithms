@@ -21,7 +21,17 @@ export function collectExample(label) {
         includeRawAudio: false,
     };
 
-    return transferRecognizer.collectExample(label, options);
+    return transferRecognizer.collectExample(label, options).then(spectrogram => {
+        console.log(transferRecognizer.dataset.examples);
+
+        // Obtener la última clave
+        const ultimaClave = Object.keys(transferRecognizer.dataset.examples).pop();
+
+        // Obtener el valor correspondiente a esa clave
+        const ultimoValor = transferRecognizer.dataset.examples[ultimaClave];
+
+        return ultimoValor.spectrogram;
+    });
 }
 export function audioEncoder(spectrograms) {
 
@@ -29,7 +39,7 @@ export function audioEncoder(spectrograms) {
     for (let spec of spectrograms) {
         const x = tf.tensor4d(
             spec, [1].concat(baseRecognizer.modelInputShape().slice(1)));
-        
+
         let embedding = baseRecognizer.recognize(x, { includeEmbedding: true })
             .then(result => {
                 return result.embedding.reshape([result.embedding.shape[1]]);
