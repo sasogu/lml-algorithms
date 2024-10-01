@@ -1,6 +1,5 @@
 import { getMobilenetEncoder } from "./feature-extraction/mobilenet";
 import { numericalEncoder } from "./feature-extraction/numerical";
-import { useEncoder } from "./feature-extraction/useEncoder";
 import { audioEncoder, collectExample } from "./feature-extraction/audioEncoder";
 import { bowEncoder, buildVocabulary, setVocabulary } from "./feature-extraction/bowEncoder";
 
@@ -17,7 +16,6 @@ import {
 export {
         getMobilenetEncoder,
         numericalEncoder,
-        useEncoder,
         bowEncoder,
         audioEncoder,
         collectExample,

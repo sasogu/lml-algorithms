@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import * as speechCommands from '@tensorflow-models/speech-commands';
+import * as speechCommands from 'lml-speech-commands';
 
 let baseRecognizer;
 let transferRecognizer;
