@@ -15,13 +15,18 @@ let transferRecognizer;
     console.log(transferRecognizer);
 })()
 
+export function playRawAudio(rawAudio){
+    return speechCommands.utils.playRawAudio(rawAudio);
+}
+
 export function collectExample(label) {
 
     let options = {
-        includeRawAudio: false,
+        includeRawAudio: true,
     };
 
     return transferRecognizer.collectExample(label, options).then(spectrogram => {
+        console.log("COLLECT EXAMPLE");
         console.log(transferRecognizer.dataset.examples);
 
         const example = Object.values(transferRecognizer.dataset.examples)[0];
@@ -32,15 +37,15 @@ export function collectExample(label) {
         const key = Object.keys(transferRecognizer.dataset.examples)[0];
         delete transferRecognizer.dataset.examples[key];
 
-        return example.spectrogram;
+        return example;
     });
 }
-export function audioEncoder(spectrograms) {
+export function audioEncoder(audioDataSet) {
 
     let embeddingsPromise = [];
-    for (let spec of spectrograms) {
+    for (let spec of audioDataSet) {
         const x = tf.tensor4d(
-            spec, [1].concat(baseRecognizer.modelInputShape().slice(1)));
+            spec.spectrogram.data, [1].concat(baseRecognizer.modelInputShape().slice(1)));
 
         let embedding = baseRecognizer.recognize(x, { includeEmbedding: true })
             .then(result => {

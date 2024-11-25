@@ -1,6 +1,6 @@
 import { getMobilenetEncoder } from "./feature-extraction/mobilenet";
 import { numericalEncoder } from "./feature-extraction/numerical";
-import { audioEncoder, collectExample } from "./feature-extraction/audioEncoder";
+import { audioEncoder, collectExample, playRawAudio } from "./feature-extraction/audioEncoder";
 import { bowEncoder, buildVocabulary, setVocabulary } from "./feature-extraction/bowEncoder";
 
 import { LMLSequential } from "./algorithms/sequential";
@@ -19,6 +19,7 @@ export {
         bowEncoder,
         audioEncoder,
         collectExample,
+        playRawAudio,
         buildVocabulary,
         setVocabulary,
         LMLSequential,
