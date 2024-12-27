@@ -10,7 +10,7 @@ let urlBaseModels;
  * @returns La función que representa el encoder con la signatura que exige los codificadores de esta librería,
  *          es decir, un solo argumento que es un array de items a codificar 
  */
-export function getMobilenetEncoder(url) {
+export function getMobilenetEncoder(url="") {
   urlBaseModels = url;
   return mobilenetEncoder;
 }
