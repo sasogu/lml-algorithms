@@ -346,7 +346,7 @@ export class KNN {
                 serializableMap[key] = array_tensors[i];
                 i++;
             });
-            console.log(serializableMap);
+            //console.log(serializableMap);
             return serializableMap;
         });
 
@@ -511,8 +511,8 @@ export class KNN {
         let outputs = tf.unstack(tensors.outputTensor);
 
         inputs.forEach((input, index) => {
-            console.log(input);
-            console.log(outputs[index].arraySync().indexOf(1));
+            //console.log(input);
+            //console.log(outputs[index].arraySync().indexOf(1));
             let label = outputs[index].arraySync().indexOf(1);
             classifier.addExample(input, label);
 

@@ -53,7 +53,7 @@ export class LMLSequential {
                 serializableMap[key] = array_tensors[i];
                 i++;
             });
-            console.log(serializableMap);
+            //console.log(serializableMap);
             return serializableMap;
         });
 
@@ -87,7 +87,7 @@ export class LMLSequential {
             ];
 
             return Promise.all(promises).then(artifacts => {
-                console.log(artifacts);
+                //console.log(artifacts);
                 return {
                     metadata: metadata,
                     jsonFile: artifacts[0].jsonFile,
@@ -199,7 +199,7 @@ export class LMLSequential {
             return file;
         }
 
-        console.log("LoadFromLocalStorage");
+        //console.log("LoadFromLocalStorage");
         let lmlModel = JSON.parse(localStorage.getItem('lmlModel'));
         let jsonFile = lmlModel.model.jsonFile;
         let weights = lmlModel.model.weights;
@@ -276,7 +276,7 @@ export class LMLSequential {
         }));
 
         return Promise.all(promises).then(r => {
-            console.log(r);
+            //console.log(r);
             let jsonFile = r[0];
             let weights = r[1];
             let metadata = r[2];
@@ -392,8 +392,8 @@ export class LMLSequential {
             const prediction = this.model.predict(inputTensor);
             inputTensor.dispose();
             const predictions = prediction.dataSync();
-            console.log(predictions);
-            console.log(this.labels);
+            //console.log(predictions);
+            //console.log(this.labels);
 
             const arr_predictions = Array.from(predictions);
             let results = [];

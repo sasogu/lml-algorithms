@@ -146,7 +146,7 @@ export function confusionMatrix(validationDataset, model) {
     validationDataset.tensor_outputs.dispose();
 
     let validationData = { text_labels: model.labels, classified: classificationResults, real: realResults };
-    console.log(validationData);
+    //console.log(validationData);
 
     let multi = [];
     for (let label of validationData.text_labels) {
@@ -212,7 +212,7 @@ export function confusionMatrix(validationDataset, model) {
       }
     };
 
-    console.log(dataForPlotly);
+    //console.log(dataForPlotly);
 
     return dataForPlotly;
   });

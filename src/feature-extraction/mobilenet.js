@@ -32,7 +32,7 @@ function mobilenetEncoder(items) {
           const t_image = tf.browser.fromPixels(image);
           const t_activation = model.infer(t_image, 'conv_preds');
           t_image.dispose();
-          console.log(t_activation);
+          //console.log(t_activation);
           resolve(t_activation);
         }
       }));

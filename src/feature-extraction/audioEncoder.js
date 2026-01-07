@@ -11,8 +11,8 @@ let transferRecognizer;
 
     transferRecognizer = baseRecognizer.createTransfer("audio-model");
 
-    console.log("transferRecognizer");
-    console.log(transferRecognizer);
+    //console.log("transferRecognizer");
+    //console.log(transferRecognizer);
 })()
 
 export function playRawAudio(rawAudio){
@@ -26,8 +26,8 @@ export function collectExample(label) {
     };
 
     return transferRecognizer.collectExample(label, options).then(spectrogram => {
-        console.log("COLLECT EXAMPLE");
-        console.log(transferRecognizer.dataset.examples);
+        //console.log("COLLECT EXAMPLE");
+        //console.log(transferRecognizer.dataset.examples);
 
         const example = Object.values(transferRecognizer.dataset.examples)[0];
         // elimino el elemento del dataset para que no se vayan acumulando y, así,
