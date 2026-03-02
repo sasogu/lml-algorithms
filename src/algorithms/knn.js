@@ -499,7 +499,7 @@ export class KNN {
      * @returns {Promise()}
      */
     train(features, percentageForValidation = 0) {
-
+        console.log("KNN train ...");
         this.features = features;
 
         this.labels = Array.from(features.keys());

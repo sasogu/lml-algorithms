@@ -1,5 +1,6 @@
 import { LMLSequential } from './sequential';
 import { KNN } from './knn';
+import { NaiveBayes } from './naive-bayes';
 
 export class LMLModelFactory {
 
@@ -11,6 +12,10 @@ export class LMLModelFactory {
 
         if (type == 'knn') {
             return new KNN;
+        }
+
+        if (type == 'naive-bayes') {
+            return new NaiveBayes;
         }
     }
 

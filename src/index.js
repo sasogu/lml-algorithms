@@ -5,6 +5,7 @@ import { bowEncoder, buildVocabulary, setVocabulary } from "./feature-extraction
 
 import { LMLSequential } from "./algorithms/sequential";
 import { KNN } from "./algorithms/knn";
+import { NaiveBayes } from "./algorithms/naive-bayes";
 import { LMLModelFactory } from "./algorithms/modelFactory";
 import {
         confusionMatrix,
@@ -24,6 +25,7 @@ export {
         setVocabulary,
         LMLSequential,
         KNN,
+        NaiveBayes,
         LMLModelFactory,
         confusionMatrix,
         transformObjectToMapWithTensors,

@@ -356,7 +356,7 @@ export class LMLSequential {
      * @returns {Promise()}
      */
     train(features, percentageForValidation = 0, onBatchEnd = null) {
-
+        console.log("Sequential train ...");
         this.percentageForValidation = percentageForValidation;
         this.features = features;
         this.labels = Array.from(features.keys());
