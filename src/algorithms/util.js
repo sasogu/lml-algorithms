@@ -68,7 +68,12 @@ function suffle(tensor_inputs, tensor_outputs) {
 }
 
 export function splitData(inputTensor, outputTensor, splitFraction) {
-  if (splitFraction <= 0 || splitFraction >= 1) return [features, null];
+  if (splitFraction <= 0 || splitFraction >= 1) {
+    return [{
+      tensor_inputs_data: inputTensor,
+      tensor_outputs_data: outputTensor
+    }, null];
+  }
 
   let [tensor_inputs, tensor_outputs] = suffle(inputTensor, outputTensor);
 

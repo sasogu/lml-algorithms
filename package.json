@@ -5,7 +5,10 @@
   "description": "Algoritmos de ML y para la extracción de características de LearningML",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -26,5 +29,9 @@
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
     "lml-speech-commands": "^0.0.8"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.4"
   }
 }
