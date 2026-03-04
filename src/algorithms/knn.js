@@ -1,10 +1,12 @@
 import * as tf from '@tensorflow/tfjs-core';
-import JSZip from 'jszip';
+import * as JSZipModule from 'jszip';
 import { saveAs } from 'file-saver';
 import {
     getFormattedModelResult,
     getSuffledAndSplittedTensorsAndValidationData
 } from './util';
+
+const JSZip = JSZipModule?.default ?? JSZipModule;
 
 function concatWithNulls(ndarray1, ndarray2) {
     if (ndarray1 == null && ndarray2 == null) {

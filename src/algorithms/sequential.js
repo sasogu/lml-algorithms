@@ -1,11 +1,13 @@
 import * as tf from '@tensorflow/tfjs';
-import JSZip from 'jszip';
+import * as JSZipModule from 'jszip';
 import { saveAs } from 'file-saver';
 import {
     getFormattedModelResult,
     getFeatureAndNumOfClasses,
     getSuffledAndSplittedTensorsAndValidationData
 } from './util';
+
+const JSZip = JSZipModule?.default ?? JSZipModule;
 
 /**
  * @typedef {Object} InOutTensors
