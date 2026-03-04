@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import * as JSZipModule from 'jszip';
-import { saveAs } from 'file-saver';
+import * as FileSaverModule from 'file-saver';
 import {
     getFormattedModelResult,
     getFeatureAndNumOfClasses,
@@ -8,6 +8,7 @@ import {
 } from './util';
 
 const JSZip = JSZipModule?.default ?? JSZipModule;
+const saveAs = FileSaverModule?.saveAs ?? FileSaverModule?.default ?? globalThis?.saveAs;
 
 /**
  * @typedef {Object} InOutTensors
